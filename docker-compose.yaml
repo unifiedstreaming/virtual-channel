@@ -1,0 +1,98 @@
+version: "3"
+services:
+
+  # unified origin
+  origin:
+    image: docker.io/unifiedstreaming/virtual-channel-origin:1.11.18
+    environment:
+      - UspLicenseKey
+      - REST_API_PORT=81
+      - REMOTE_STORAGE_URL
+      - S3_ACCESS_KEY
+      - S3_SECRET_KEY
+      - S3_REGION
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.origin.entrypoints=web"
+      - "traefik.http.routers.origin.rule=PathPrefix(`/`)"
+    volumes:
+      - type: bind
+        source: ./channels
+        target: /var/www/unified-origin/
+
+  # Virtual Channel application
+  virtual-channel-api:
+    image: docker.io/unifiedstreaming/virtual-channel-app:1.11.18
+    environment:
+      - UspLicenseKey
+      - LOG_LEVEL=INFO
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.api.entrypoints=api"
+      - "traefik.http.routers.api.rule=PathPrefix(`/`)"
+      - "traefik.http.services.api.loadbalancer.server.port=8000"
+    volumes:
+      - type: bind
+        source: ./channels
+        target: /channels
+    command: uvicorn app.main:app --host 0.0.0.0 --port 8000 --proxy-headers --forwarded-allow-ips *
+
+  # Manifest Proxy application
+  manifest-proxy:
+    image: docker.io/unifiedstreaming/virtual-channel-manifest-proxy:1.11.18
+    environment:
+      - UspLicenseKey
+      - LOG_LEVEL=INFO
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.manifest-proxy.rule=Path(`/{manifest:.*\\.ism[l]?/.*\\.(mpd|m3u8)}`)"
+      - "traefik.http.routers.manifest-proxy.entrypoints=web"
+    volumes:
+      - type: bind
+        source: ./channels
+        target: /channels
+    command: uvicorn app.main:app --host 0.0.0.0 --port 80 --proxy-headers --forwarded-allow-ips *
+
+  virtual-channel-worker:
+    image: docker.io/unifiedstreaming/virtual-channel-app:1.11.18
+    environment:
+      - UspLicenseKey
+      - S3_ACCESS_KEY
+      - S3_SECRET_KEY
+      - S3_REGION
+      - LOG_LEVEL=INFO
+    volumes:
+      - type: bind
+        source: ./channels
+        target: /channels
+    command: /bin/sh -c "celery -A app.tasks.vod2live worker --loglevel $${LOG_LEVEL}"
+
+  # redis and rabbitmq for task queue and results storage
+  redis:
+    image: redis:5
+    ports:
+      - 6379:6379
+
+  rabbitmq:
+    image: rabbitmq:management
+
+  traefik:
+    image: traefik:v2.7
+    command:
+      - "--api.insecure=true"
+      - "--providers.docker=true"
+      - "--providers.docker.exposedbydefault=false"
+      - "--entrypoints.web.address=:80"
+      - "--entrypoints.api.address=:8000"
+    ports:
+      - 80:80
+      - 8000:8000
+      - 8080:8080
+    volumes:
+      - "/var/run/docker.sock:/var/run/docker.sock:ro"
+
+volumes:
+  rabbitmq_data:
+    driver: local
+  redis_data:
+    driver: local
