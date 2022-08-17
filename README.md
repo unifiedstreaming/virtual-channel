@@ -21,7 +21,7 @@ for an overview of the supported scenarios.
 ## Preliminary settings and limitations
 A valid license with VOD2Live permission is required. If you don't have one and want to
 evaluate Virtual Channel you can create an account at
-https://private.unified-streaming.com/register/ to get a trial license.
+https://www.unified-streaming.com/get-started to get a trial license.
 
 
 Its content must be available in the `UspLicenseKey` environmental variable. In the
@@ -78,7 +78,7 @@ documentation at [`http://localhost:8000/docs`](http://localhost:8000/docs). It 
 provide you with an exhaustive list of the available endpoints and it will serve you
 as reference to create your API calls and define your workflow.
 
-## Channel worfklow walkthrough
+## Channel workflow walkthrough
 
 ### Step 1: create a channel
 In general, the Virtual Channel workflow starts with the creation of a channel using the
@@ -152,7 +152,7 @@ channel creation job is in either one of the **Success** or **Failed** statuses.
 also channels that are playing already.
 
 
-## Transition worfklow walkthrough
+## Transition workflow walkthrough
 
 Once you have created at least one channel, you can proceed to add transitions.
 
