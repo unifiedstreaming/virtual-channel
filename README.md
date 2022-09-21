@@ -18,7 +18,7 @@ Transitions can switch from/to any combination of VOD2Live and "pure" Live sourc
 Refer to [Virtual Channel's solutions page](https://www.unified-streaming.com/solutions/virtual-channels)
 for an overview of the supported scenarios.
 
-## Preliminary settings and limitations
+## Preliminary settings
 A valid license with VOD2Live permission is required. If you don't have one and want to
 evaluate Virtual Channel you can create an account at
 https://www.unified-streaming.com/get-started to get a trial license.
@@ -42,15 +42,29 @@ export S3_REGION=<the s3 region of your storage bucket>
 export S3_REMOTE_STORAGE_URL=<the s3 http bucket url>
 ```
 
-Notice that Virtual Channel can only ever work with one S3 bucket at a time, which is
-set at startup time. This means that *any* VOD content referenced in your playlists
-must belong to the same S3 bucket (i.e. it is not possible to transition across two
-playlists referencing content on two or more different S3 buckets).
+## Limitations
+At the moment, the same limitations apply for Virtual Channel that are mentioned
+for [VOD2Live](https://docs.unified-streaming.com/documentation/remix/vod2live/limitations.html)
 
-:construction_worker: :construction: **To be improved** transitions have the
-same (or more stringent) limitations encountered when mixing VOD content in the same
-SMIL for Remix. Codec and bitrate must match, number and kind of tracks need to match
-as well.
+In order to transition between different sources it is a requirement that their
+encoding profiles match. This means they must have the same number of tracks
+with the same properties. This is a strict requirement from HLS, and a de facto
+requirement for DASH.
+
+For VOD2Live playlists processed by Unified Remix it will take care of this as
+much as possible by matching tracks, but for the best output it is strongly
+recommended to make sure all content is encoded with the same profile.
+
+Notice that Virtual Channel, at this stage, can only ever work with one S3 bucket at a
+time, which is set at startup time. This means that *any* VOD content referenced in your
+playlists must belong to the same S3 bucket (i.e. it is not possible to transition
+across two playlists referencing content on two or more different S3 buckets).
+
+If one or more of your VOD2Live playlist contain SCTE35 events and you are using
+transitions, you will have to manually take care of avoiding that a transition is
+programmed in the time frame where a SCTE35 opportunity is programmed. In other words,
+if after a "CUE-OUT" event a transition happens, the correspoding "CUE-IN" event will
+be lost and this can lead to unexpected behaviour downstream.
 
 ## How to run
 First, clone this repository.
@@ -88,7 +102,7 @@ In general, the Virtual Channel workflow starts with the creation of a channel u
   create a `rock_concert` event by PUTting to `http://localhost:8000/channel/rock_concert`
   )
 - an appropriate SMIL playlist must be provided as an `application/xml`request body
-  (see [SMIL creation](SMIL-creation) for instructions on SMIL creation).
+  (see [SMIL creation](#smil-creation) for instructions on SMIL creation).
 
 The name you have chosen for your channel will reflect in the playout URL: i.e. for the
 previous example's `rock_concert` name, the playout URL will be available at
@@ -171,7 +185,7 @@ create a channel and it requires two things:
   )
 - an appropriate SMIL playlist, provided as an `application/xml`request body, describing
   what the channel should transition to. (the same SMIL instructions
-  [SMIL creation](SMIL-creation) apply).
+  [SMIL creation](#smil-creation) apply).
 
 :warning: always use transition times expressed in UTC, using one of the two allowed
   time formats `2022-04-14T06:00:00Z` or `2022-04-14T06:00:00.000Z`
@@ -284,11 +298,30 @@ You can find additional examples of valid SMIL playlists in this repository's
 
 ### Live SMIL
 
-:construction_worker: :construction: provide instructions and a working example
+For a Live playlist, an empty `<body>` and a
+`<head>` section with two mandatory options, `live_source` and `dvr_window_length`,
+are required.
 
-## Limitations
-At the moment, the same limitations apply for Virtual Channel than what mentioned
-for [VOD2Live](https://docs.unified-streaming.com/documentation/remix/vod2live/limitations.html)
+Here is an example:
+
+```
+<?xml version='1.0' encoding='UTF-8'?>
+<smil xmlns="http://www.w3.org/2001/SMIL20/Language">
+  <head>
+    <meta name="live_source" content="https://demo.unified-streaming.com/k8s/vc-perm-live-source/trunk/colourbars/colourbars.isml" />
+    <meta name="dvr_window_length" content="30" />
+  </head>
+  <body/>
+</smil>
+
+```
+
+Notice that `live_source` must refer to an existing Live Origin instance and that
+`dvr_window_length` is expressed in seconds.
+
+A live SMIL must only refer to *one* existing live source, i.e. it is not possible to
+"stitch" multiple live sources together in a single playlist. For this purpose, you
+will have to use multiple Live playlists and use transitions.
 
 ## FAQ
 
