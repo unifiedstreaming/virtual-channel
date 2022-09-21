@@ -15,9 +15,7 @@ x-vc-worker-environment:
   - S3_REGION
   - LOG_LEVEL=DEBUG
 
-x-vc-worker-image:
-  &default-vc-worker-image
-  docker.io/unifiedstreaming/virtual-channel-app:1.11.19
+x-vc-worker-image: &default-vc-worker-image docker.io/unifiedstreaming/virtual-channel-app:1.11.19
 
 x-vc-volumes:
   &default-volumes
@@ -85,7 +83,7 @@ services:
     logging: *default-logging
     environment: *default-vc-worker-environment
     volumes: *default-volumes
-    command: celery -A app.tasks.vod2live worker -Q vod2live --loglevel $${LOG_LEVEL}
+    command: /bin/sh -c "celery -A app.tasks.vod2live worker -Q vod2live --loglevel $${LOG_LEVEL}"
 
   virtual-channel-worker-transition:
     image: *default-vc-worker-image
@@ -93,7 +91,8 @@ services:
     logging: *default-logging
     environment: *default-vc-worker-environment
     volumes: *default-volumes
-    command: celery -A app.tasks.trigger_transition worker -Q trigger_transition --loglevel $${LOG_LEVEL}
+
+    command: /bin/sh -c "celery -A app.tasks.trigger_transition worker -Q trigger_transition --loglevel $${LOG_LEVEL}"
 
   # redis and rabbitmq for task queue and results storage
   redis:
