@@ -18,7 +18,7 @@ Transitions can switch from/to any combination of VOD2Live and "pure" Live sourc
 Refer to [Virtual Channel's solutions page](https://www.unified-streaming.com/solutions/virtual-channels)
 for an overview of the supported scenarios.
 
-## Preliminary settings
+## Mandatory Preliminary settings
 A valid license with VOD2Live permission is required. If you don't have one and want to
 evaluate Virtual Channel you can create an account at
 https://www.unified-streaming.com/get-started to get a trial license.
@@ -41,6 +41,57 @@ export S3_SECRET_KEY=<your s3 secret key>
 export S3_REGION=<the s3 region of your storage bucket>
 export S3_REMOTE_STORAGE_URL=<the s3 http bucket url>
 ```
+
+## Security-related settings
+If you are just getting familiar with Virtual Channel, in a trusted test environment,
+you can skip this section for the moment. However, you must read it before
+using Virtual Channel in production or exposing the service on a public endpoint or in
+general in an environment where it could be exposed to untrusted clients.
+
+# API Key authorization
+
+Virtual Channel's API endpoints access can be allowed to any client or can be restricted
+to just those providing an API Key in an authorization header. You can enable/disable
+this access restriction by acting on the two shell environmental variables:
+
+- API_KEY
+- API_INSECURE
+
+In order to enable the insecure unrestricted API mode, your shell should have:
+
+- API_KEY: unset or empty
+- API_INSECURE: unset or True
+
+:warning: make sure to notice what the above means: by default, if you don't set
+  any of those variables, Virtual Channel API will start in insecure unrestricted mode!
+
+In order to enable API Key authorization, set the following in your shell:
+
+- API_KEY set to the key you have generated (i.e ```export API_KEY=<my_key>```)
+- API_INSECURE set to False (i.e ```export API_INSECURE=False```)
+
+Once API Key authorization is enabled, clients will need to add to their HTTP requests
+the additional header
+
+```
+USP-API-KEY: <my_key>
+```
+
+E.g. with cURL, a valid request, with authentication enabled, would be
+
+```
+curl -H "USP-API-KEY: <my_key>" "http://localhost:8000/version"
+```
+
+:note: the root "/" endpoint, only used for healthchecks, is deliberately left open
+  even when API Key authorization is enabled
+
+# RabbitMQ credentials
+Virtual Channel internally uses RabbitMQ as a message broker and credentials are needed
+for Virtual Channel services to use it. Should you ever need to change the default
+credentials, you can do so by editing the included `rabbitmq-credentials.env` file or
+overriding the `RABBITMQ_DEFAULT_USER`, `RABBITMQ_DEFAULT_PASS` environmental variables.
+
 
 ## Limitations
 At the moment, the same limitations apply for Virtual Channel that are mentioned
@@ -194,6 +245,12 @@ As it happens for channels, creating a transition may be a long-running operatio
 as such is executed in the background. For this reason, you should always check the
 transition creation status after using this endpoint.
 
+:warning: if you try to add a transition to a non-existent channel, the operation will
+  still be allowed but the provided transition time will be ignored and instead a
+  "channel creation" will be performed. In other words, if you perform a
+  `PUT /channel/my_channel/{transition}` operation when `my_channel` does not exist
+  yet, Virtual Channel will effectively execute a `PUT /channel/my_channel` operation.
+
 ### Step 2: check your transition creation status
 
 As a user, you can monitor at any time the status of your transition creation job
@@ -233,7 +290,14 @@ to create another transition at some point in the future.
 ### Step 4 : list and delete your transitions
 
 You can get a list of the existing transitions on a given channels with the
-`/{channel}/transitions` endpoint.
+`/{channel}/transitions` endpoint. This will return a dictionary where,
+for each transition ever submitted, details on the job status and the related smil will
+be provided.
+
+If you wish to only retrieve those transitions whose job was successful (and thus
+actually affecting your channel), you can filter the results via query parameter, i.e.
+`/{channel}/transitions?status=Success`. Similarly, you may filter for unsuccessful
+transition jobs using the filter `/{channel}/transitions?status=Failed`.
 
 To remove a transition, perform a `DELETE` operation. This will be allowed only if the
 transition creation job is in either one of the **Success** or **Failed** statuses.
@@ -407,6 +471,7 @@ The recommendations are identical to the ones for the vod2live_start_time option
   decimal digits for seconds):
   - `2021-03-22T21:00:00Z`
   - `2021-03-22T21:00:00.000000Z`
+- make sure your transition time is in the future, ideally at least a few minutes
 </details>
 
 <details>
@@ -463,7 +528,7 @@ This is better clarified by a couple of example scenarios:
 ```
 
 The above is a sketch of a channel with two transitions, with viewers
-reproducing it at different point in time. In angular brackets, their
+reproducing it at different points in time. In angular brackets, their
 DVR window is represented. Viewer 1 is on the Live edge,
 while Viewer 2 and 3 are using the "restart/catch-up" functionality.
 
@@ -510,8 +575,8 @@ When you DELETE a transition, if it involved VOD2Live content, the `.isml` serve
 manifest and the corresponding remixed mp4 are deleted. Virtual Channel deletes all
 the details about the transition (original SMIL, isml, logs and status details).
 
-If you need to keep an history of deleted transitions, you should save all the details you
-need before deleting it from Virtual Channels.
+If you need to keep an history of deleted transitions, you should save all the details
+you need before deleting it from Virtual Channels.
 </details>
 
 <details>
@@ -521,16 +586,17 @@ Just perform a PUT operation on the same channel/transition endpoint, with a
 different SMIL payload.
 
 Remember that changes are not permitted on channels/transitions whose vod2live_start_time
-or transition time are in the past, unless you specify the `force`  query parameter
+or transition time are in the past, unless you specify the `force` query parameter
 (which is highly discouraged since it will break running streams).
 </details>
 
 <details>
-  <summary><b>Can I update a channel if that is live already?</b></summary>
+  <summary><b>Can I update a channel if it is live already?</b></summary>
   
 No, Virtual Channels will prevent you from doing so. If you have made a mistake and you 
 want to complitely obliterate the existing channel, you can perform a DELETE and a
-subsequent PUT to recreate the channel. Notice though that this will inevitably break playout.
+subsequent PUT to recreate the channel. Notice though that this will inevitably break
+playout.
 
 If you just want to switch the existing channel to new content, you should perform a
 transition. Notice though that viewers will still be able to access the channel content
@@ -544,9 +610,9 @@ streams, then you can force the operation by specifying the `force` query parame
 <details>
   <summary><b>Can I update a channel/transition if that is not yet active?</b></summary>
   
-Yes, if the specified start time has not yet been reached, you can modify the channel/transition
-(e.g. provide a new SMIL playlist) by just performing another PUT operation. The
-existing channel/transition will be completely overwritten.
+Yes, if the specified start time has not yet been reached, you can modify the
+channel/transition (e.g. provide a new SMIL playlist) by just performing another PUT
+operation. The existing channel/transition will be completely overwritten.
 </details>
 
 ### Troubleshooting ###
