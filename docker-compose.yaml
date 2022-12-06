@@ -1,5 +1,10 @@
 version: "3"
 
+# Base docker-compose.yaml for Virtual Channel. This is *NOT* a functional
+# docker-compose file taken alone, but it must be used with at least one
+# override that includes either a build: or image: tag and appropriate
+# traefik configuration.
+
 x-logging:
   &default-logging
   options:
@@ -7,18 +12,29 @@ x-logging:
     max-file: '5'
   driver: json-file
 
-x-vc-worker-environment:
-  &default-vc-worker-environment
+x-vc-environment:
+  # Env vars common to most containers
+  &default-vc-environment
   - UspLicenseKey
   - S3_ACCESS_KEY
   - S3_SECRET_KEY
   - S3_REGION
-  - LOG_LEVEL=DEBUG
-
-x-vc-worker-image: &default-vc-worker-image ghcr.io/unifiedstreaming/virtual-channel-app:1.11.22
+  - LOG_LEVEL
+  - RABBITMQ_DEFAULT_USER
+  - RABBITMQ_DEFAULT_PASS
+  # Origin only
+  - ORIGIN_PORT
+  - REMOTE_STORAGE_URL
+  # Virtual Channel API only
+  - API_PORT
+  - API_KEY
+  - API_INSECURE
+  - REMIX_TASK_TIMEOUT
+  # RabbitMQ only
+  - RABBITMQ_SERVER_ADDITIONAL_ERL_ARGS
 
 x-vc-volumes:
-  &default-volumes
+  &default-vc-volumes
   - type: bind
     source: ./channels
     target: /channels
@@ -27,20 +43,10 @@ services:
 
   # unified origin
   origin:
-    image: ghcr.io/unifiedstreaming/virtual-channel-origin:1.11.22
-    restart: always
+    image: ghcr.io/unifiedstreaming/virtual-channel-origin:1.11.23
     logging: *default-logging
-    environment:
-      - UspLicenseKey
-      - REST_API_PORT=81
-      - REMOTE_STORAGE_URL
-      - S3_ACCESS_KEY
-      - S3_SECRET_KEY
-      - S3_REGION
-    labels:
-      - "traefik.enable=true"
-      - "traefik.http.routers.origin.entrypoints=web"
-      - "traefik.http.routers.origin.rule=PathPrefix(`/`)"
+    restart: always
+    environment: *default-vc-environment
     volumes:
       - type: bind
         source: ./channels
@@ -48,59 +54,40 @@ services:
 
   # Virtual Channel application
   virtual-channel-api:
-    image: ghcr.io/unifiedstreaming/virtual-channel-app:1.11.22
+    image: ghcr.io/unifiedstreaming/virtual-channel-app:1.11.23
     restart: always
     logging: *default-logging
-    environment:
-      - UspLicenseKey
-      - LOG_LEVEL=INFO
-      - API_KEY=${API_KEY}
-      - API_INSECURE=${API_INSECURE:-True}
-    env_file:
-      - rabbitmq-credentials.env
-    labels:
-      - "traefik.enable=true"
-      - "traefik.http.routers.api.entrypoints=api"
-      - "traefik.http.routers.api.rule=PathPrefix(`/`)"
-      - "traefik.http.services.api.loadbalancer.server.port=8000"
-    volumes: *default-volumes
+    environment: *default-vc-environment
+    volumes: *default-vc-volumes
     command: uvicorn app.main:app --host 0.0.0.0 --port 8000 --proxy-headers --forwarded-allow-ips *
 
   # Manifest Proxy application
   manifest-proxy:
-    image: ghcr.io/unifiedstreaming/virtual-channel-manifest-proxy:1.11.22
+    image: ghcr.io/unifiedstreaming/virtual-channel-manifest-proxy:1.11.23
     restart: always
     logging: *default-logging
-    environment:
-      - UspLicenseKey
-      - LOG_LEVEL=INFO
-    labels:
-      - "traefik.enable=true"
-      - "traefik.http.routers.manifest-proxy.rule=Path(`/{manifest:.*\\.ism[l]?/.*\\.(mpd|m3u8)}`)"
-      - "traefik.http.routers.manifest-proxy.entrypoints=web"
-    volumes: *default-volumes
+    environment: *default-vc-environment
+    volumes:
+      - type: bind
+        source: ./channels
+        target: /channels
     command: uvicorn app.main:app --host 0.0.0.0 --port 80 --proxy-headers --forwarded-allow-ips *
 
   virtual-channel-worker-vod2live:
-    image: *default-vc-worker-image
+    image: ghcr.io/unifiedstreaming/virtual-channel-app:1.11.23
     restart: always
     logging: *default-logging
-    environment: *default-vc-worker-environment
-    env_file:
-      - rabbitmq-credentials.env
-    volumes: *default-volumes
-    command: /bin/sh -c "celery -A app.tasks.vod2live worker -Q vod2live --loglevel $${LOG_LEVEL}"
+    environment: *default-vc-environment
+    volumes: *default-vc-volumes
+    command: celery -A app.tasks.vod2live worker -Q vod2live --loglevel info
 
   virtual-channel-worker-transition:
-    image: *default-vc-worker-image
+    image: ghcr.io/unifiedstreaming/virtual-channel-app:1.11.23
     restart: always
     logging: *default-logging
-    environment: *default-vc-worker-environment
-    env_file:
-      - rabbitmq-credentials.env
-    volumes: *default-volumes
-
-    command: /bin/sh -c "celery -A app.tasks.trigger_transition worker -Q trigger_transition --loglevel $${LOG_LEVEL}"
+    environment: *default-vc-environment
+    volumes: *default-vc-volumes
+    command: celery -A app.tasks.trigger_transition worker -Q trigger_transition --loglevel info
 
   # redis and rabbitmq for task queue and results storage
   redis:
@@ -118,26 +105,14 @@ services:
     restart: always
     # Set consumer_timeout to allow Celery jobs with long ETA, see
     # https://docs.celeryq.dev/en/stable/userguide/calling.html#eta-and-countdown
-    environment:
-      - RABBITMQ_SERVER_ADDITIONAL_ERL_ARGS=-rabbit consumer_timeout 31622400000
-    env_file:
-      - rabbitmq-credentials.env
+    environment: *default-vc-environment
     volumes:
       - rabbitmq_data:/var/lib/rabbitmq
 
   traefik:
     image: traefik:v2.7
-    restart: always
     logging: *default-logging
-    command:
-      - "--providers.docker=true"
-      - "--providers.docker.exposedbydefault=false"
-      - "--entrypoints.web.address=:80"
-      - "--entrypoints.api.address=:8000"
-      - "--entryPoints.api.forwardedHeaders.insecure"
-    ports:
-      - 80:80
-      - 8000:8000
+    restart: always
     volumes:
       - "/var/run/docker.sock:/var/run/docker.sock:ro"
 

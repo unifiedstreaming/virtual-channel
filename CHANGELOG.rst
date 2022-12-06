@@ -1,3 +1,30 @@
+v1.11.23
+=========
+
+Breaking Changes:
+------------------
+
+* API Manifest Edit endpoints path renamed from .../pipelines/formats/{format} to .../pipelines/{format} (#174)
+* API log endpoints path renamed from .../{channel}/log to .../{channel}/logs (#173)
+* API transition endpoints path renamed from .../{channel}/{transition_time} to .../{channel}/transitions/{transition_time} (#172)
+* API endpoints paths (all) renamed from /channel to /channels (#171)
+
+New Features:
+--------------
+
+* Switch uvicorn event loop to use uvloop (#176)
+* Switch from Alpine Linux to Ubuntu 22.04 (#175)
+* Remix timeout is now handled correctly and configurable (#170)
+* Added working Manifest Edit example in Swagger UI (#164)
+* Adaptation Set IDs in DASH manifests are now unsigned integers instead of strings (#159)
+* A single env file now collects all Virtual Channel environmental variables used for configuration (#150)
+
+Bugfixes:
+----------
+
+* DASH manifest publishTime is now wallclock-based instead of starting from zero (#168)
+* Fix HLS key change signalling on transition (#162)
+
 v1.11.22
 =========
 
