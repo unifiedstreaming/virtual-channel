@@ -32,6 +32,7 @@ x-vc-environment:
   - REMIX_TASK_TIMEOUT
   # RabbitMQ only
   - RABBITMQ_SERVER_ADDITIONAL_ERL_ARGS
+  - DAYS_TO_KEEP_TRANSITIONS_FOR
 
 x-vc-volumes:
   &default-vc-volumes
@@ -43,7 +44,7 @@ services:
 
   # unified origin
   origin:
-    image: ghcr.io/unifiedstreaming/virtual-channel-origin:1.11.23
+    image: ghcr.io/unifiedstreaming/virtual-channel-origin:1.11.24
     logging: *default-logging
     restart: always
     environment: *default-vc-environment
@@ -54,7 +55,7 @@ services:
 
   # Virtual Channel application
   virtual-channel-api:
-    image: ghcr.io/unifiedstreaming/virtual-channel-app:1.11.23
+    image: ghcr.io/unifiedstreaming/virtual-channel-app:1.11.24
     restart: always
     logging: *default-logging
     environment: *default-vc-environment
@@ -63,7 +64,7 @@ services:
 
   # Manifest Proxy application
   manifest-proxy:
-    image: ghcr.io/unifiedstreaming/virtual-channel-manifest-proxy:1.11.23
+    image: ghcr.io/unifiedstreaming/virtual-channel-manifest-proxy:1.11.24
     restart: always
     logging: *default-logging
     environment: *default-vc-environment
@@ -74,7 +75,7 @@ services:
     command: uvicorn app.main:app --host 0.0.0.0 --port 80 --proxy-headers --forwarded-allow-ips *
 
   virtual-channel-worker-vod2live:
-    image: ghcr.io/unifiedstreaming/virtual-channel-app:1.11.23
+    image: ghcr.io/unifiedstreaming/virtual-channel-app:1.11.24
     restart: always
     logging: *default-logging
     environment: *default-vc-environment
@@ -82,12 +83,28 @@ services:
     command: celery -A app.tasks.vod2live worker -Q vod2live --loglevel info
 
   virtual-channel-worker-transition:
-    image: ghcr.io/unifiedstreaming/virtual-channel-app:1.11.23
+    image: ghcr.io/unifiedstreaming/virtual-channel-app:1.11.24
     restart: always
     logging: *default-logging
     environment: *default-vc-environment
     volumes: *default-vc-volumes
     command: celery -A app.tasks.trigger_transition worker -Q trigger_transition --loglevel info
+
+  virtual-channel-worker-housekeeping:
+    image: ghcr.io/unifiedstreaming/virtual-channel-app:1.11.24
+    restart: always
+    logging: *default-logging
+    environment: *default-vc-environment
+    volumes: *default-vc-volumes
+    command: celery -A app.tasks.housekeeping worker --loglevel info
+
+  virtual-channel-celery-beat:
+    image: ghcr.io/unifiedstreaming/virtual-channel-app:1.11.24
+    restart: always
+    logging: *default-logging
+    environment: *default-vc-environment
+    volumes: *default-vc-volumes
+    command: celery -A app.housekeeping beat --loglevel info
 
   # redis and rabbitmq for task queue and results storage
   redis:

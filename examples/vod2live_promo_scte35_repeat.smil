@@ -1,0 +1,55 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<smil xmlns="http://www.w3.org/2001/SMIL20/Language">
+  <head>
+    <meta name="vod2live" content="true" />
+    <meta name="vod2live_start_time" content="2022-04-14T06:00:00Z" />
+    <meta name="hls_client_manifest_version" content="5" />
+    <meta name="hls_minimum_fragment_length" content="48/25" />
+    <meta name="mpd_minimum_fragment_length" content="48/25" />
+    <meta name="mpd_segment_template" content="time" />
+    <meta name="timed_metadata" content="true" />
+    <meta name="splice_media" content="true" />
+  </head>
+  <body>
+    <!-- This playlist contains the same promotion in a loop with a SCTE 35 break
+  going OUT at the start of first promo and back IN at the start of the second -->
+    <seq>
+        
+      <par clipEnd="wallclock(1970-01-01T00:00:44.160Z)">
+        <audio src="https://usp-vod2live.s3.amazonaws.com/Promo_Learning-aac-128k.mp4"/>
+        <video src="https://usp-vod2live.s3.amazonaws.com/Promo_Learning-avc1-400k.mp4"/>
+        <video src="https://usp-vod2live.s3.amazonaws.com/Promo_Learning-avc1-750k.mp4"/>
+        <video src="https://usp-vod2live.s3.amazonaws.com/Promo_Learning-avc1-1000k.mp4"/>
+        <video src="https://usp-vod2live.s3.amazonaws.com/Promo_Learning-avc1-1500k.mp4"/>
+        <EventStream xmlns="urn:mpeg:dash:schema:mpd:2011" schemeIdUri="urn:scte:scte35:2013:xml" timescale="25">
+          <Event id="0" presentationTime="0" duration="1104">
+            <Signal xmlns="http://www.scte.org/schemas/35/2016">
+              <SpliceInfoSection>
+                <SpliceInsert spliceEventId="0" outOfNetworkIndicator="1" spliceImmediateFlag="1">
+                  <Program/>
+                  <BreakDuration duration="3974400"/>
+                </SpliceInsert>
+              </SpliceInfoSection>
+            </Signal>
+          </Event>
+          <Event id="0" presentationTime="1504" duration="0">
+            <Signal xmlns="http://www.scte.org/schemas/35/2016">
+              <SpliceInfoSection>
+                <SpliceInsert spliceEventId="0" outOfNetworkIndicator="0" spliceImmediateFlag="1">
+                  <Program/>
+                </SpliceInsert>
+              </SpliceInfoSection>
+            </Signal>
+          </Event>
+        </EventStream>
+      </par>
+      <par clipEnd="wallclock(1970-01-01T00:00:44.160Z)">
+        <audio src="https://usp-vod2live.s3.amazonaws.com/Promo_Learning-aac-128k.mp4"/>
+        <video src="https://usp-vod2live.s3.amazonaws.com/Promo_Learning-avc1-400k.mp4"/>
+        <video src="https://usp-vod2live.s3.amazonaws.com/Promo_Learning-avc1-750k.mp4"/>
+        <video src="https://usp-vod2live.s3.amazonaws.com/Promo_Learning-avc1-1000k.mp4"/>
+        <video src="https://usp-vod2live.s3.amazonaws.com/Promo_Learning-avc1-1500k.mp4"/>
+      </par>
+    </seq>
+  </body>
+</smil>

@@ -1,3 +1,25 @@
+v1.11.24
+=========
+
+Breaking Changes:
+------------------
+
+* Error out on transition if base channel does not exists (#185)
+* Reuse ismls as much as possible to improve cache efficiency of multiple channels with shared playlists (#147)
+
+New Features:
+--------------
+
+* Error out on transition creation if transition time is < vod2live start time (#186)
+* Transitions are aborted if not ready before the scheduled transition time (#62)
+* Automatic deletion of old playlists (configurable, defaults to 7 days retention) (#50)
+
+Bugfixes:
+----------
+
+* LOG_LEVEL values "warn" and "alert" now work correctly (#190)
+* Improve SMIL parsing to properly handle optional attributes on EventStream and Event elements (#184)
+
 v1.11.23
 =========
 
