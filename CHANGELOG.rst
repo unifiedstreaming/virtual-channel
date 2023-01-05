@@ -1,3 +1,11 @@
+v1.12.0
+========
+
+Bugfixes:
+----------
+
+* Fix DASH BaseURL calculation for transitions (#199)
+
 v1.11.24
 =========
 
