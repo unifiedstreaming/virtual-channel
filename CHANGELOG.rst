@@ -1,3 +1,11 @@
+v1.12.1
+========
+
+Bugfixes:
+----------
+
+* Fixed issue preventing transition creation when maximum number of channel is reached (#201)
+
 v1.12.0
 ========
 
