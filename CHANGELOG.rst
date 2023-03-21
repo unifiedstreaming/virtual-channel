@@ -1,3 +1,16 @@
+v1.12.2
+========
+
+New Features:
+--------------
+
+* Allow configuration of external Redis and RabbitMQ (#211)
+
+Bugfixes:
+----------
+
+* Fix incorrect headers set on manifest proxy response (#206)
+
 v1.12.1
 ========
 
