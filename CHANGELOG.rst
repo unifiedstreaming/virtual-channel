@@ -1,3 +1,11 @@
+v1.12.3
+========
+
+Bugfixes:
+----------
+
+* Fix #EXT-X-MEDIA-SEQUENCE for streams with variable EXTINF durations (#216)
+
 v1.12.2
 ========
 
