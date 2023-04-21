@@ -1,3 +1,19 @@
+v1.12.4
+========
+
+New Features:
+--------------
+
+* Allow custom RabbitMQ connection string for Celery by setting CELERY_BROKER environment variable (#221)
+* Support optional hls_minimum_fragment_length configuration in live source SMIL head (#217)
+
+Bugfixes:
+----------
+
+* Correctly set start and end times on EXT-X-DATERANGE tags not attached to an EXT-INF (#222)
+* Set correct timeShiftBufferDepth on dynamic DASH manifests with fixed vbegin (#219)
+* Give more informative error message when requesting manifest with invalid vbegin, vend, or t query parameter (#218)
+
 v1.12.3
 ========
 
