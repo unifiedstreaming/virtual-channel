@@ -1,3 +1,12 @@
+v1.12.5
+========
+
+Bugfixes:
+----------
+
+* Fix HLS keyframe playlist segment URLs (#224)
+* Update HLS media sequence to account for extra segments added for ad insertion or playlist looping (#223)
+
 v1.12.4
 ========
 

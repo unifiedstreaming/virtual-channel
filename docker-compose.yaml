@@ -48,7 +48,7 @@ services:
 
   # unified origin
   origin:
-    image: ghcr.io/unifiedstreaming/virtual-channel-origin:1.12.4
+    image: ghcr.io/unifiedstreaming/virtual-channel-origin:1.12.5
     logging: *default-logging
     restart: always
     environment: *default-vc-environment
@@ -59,7 +59,7 @@ services:
 
   # Virtual Channel application
   virtual-channel-api:
-    image: ghcr.io/unifiedstreaming/virtual-channel-app:1.12.4
+    image: ghcr.io/unifiedstreaming/virtual-channel-app:1.12.5
     restart: always
     logging: *default-logging
     environment: *default-vc-environment
@@ -68,7 +68,7 @@ services:
 
   # Manifest Proxy application
   manifest-proxy:
-    image: ghcr.io/unifiedstreaming/virtual-channel-manifest-proxy:1.12.4
+    image: ghcr.io/unifiedstreaming/virtual-channel-manifest-proxy:1.12.5
     restart: always
     logging: *default-logging
     environment: *default-vc-environment
@@ -79,7 +79,7 @@ services:
     command: uvicorn app.main:app --host 0.0.0.0 --port 80 --proxy-headers --forwarded-allow-ips *  --no-date-header
 
   virtual-channel-worker-vod2live:
-    image: ghcr.io/unifiedstreaming/virtual-channel-app:1.12.4
+    image: ghcr.io/unifiedstreaming/virtual-channel-app:1.12.5
     restart: always
     logging: *default-logging
     environment: *default-vc-environment
@@ -87,7 +87,7 @@ services:
     command: celery -A app.tasks.vod2live worker -Q vod2live --loglevel info
 
   virtual-channel-worker-transition:
-    image: ghcr.io/unifiedstreaming/virtual-channel-app:1.12.4
+    image: ghcr.io/unifiedstreaming/virtual-channel-app:1.12.5
     restart: always
     logging: *default-logging
     environment: *default-vc-environment
@@ -95,7 +95,7 @@ services:
     command: celery -A app.tasks.trigger_transition worker -Q trigger_transition --loglevel info
 
   virtual-channel-worker-housekeeping:
-    image: ghcr.io/unifiedstreaming/virtual-channel-app:1.12.4
+    image: ghcr.io/unifiedstreaming/virtual-channel-app:1.12.5
     restart: always
     logging: *default-logging
     environment: *default-vc-environment
@@ -103,7 +103,7 @@ services:
     command: celery -A app.tasks.housekeeping worker --loglevel info
 
   virtual-channel-celery-beat:
-    image: ghcr.io/unifiedstreaming/virtual-channel-app:1.12.4
+    image: ghcr.io/unifiedstreaming/virtual-channel-app:1.12.5
     restart: always
     logging: *default-logging
     environment: *default-vc-environment
