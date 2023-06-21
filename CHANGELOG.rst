@@ -1,3 +1,24 @@
+v1.12.8
+========
+
+Breaking Changes:
+------------------
+
+* Output separate DASH periods for ad breaks (#203)
+
+  * Database changes related to this feature may break DASH output for existing channels and they will need to be recreated.
+
+New Features:
+--------------
+
+* Add MANIFEST_PROXY_HOST option for transition worker to connect to remote manifest proxy (#225)
+
+Bugfixes:
+----------
+
+* Properly handle request with vend in the future by capping it to current wallclock time (#229)
+* Set correct Expires and Cache-Control: max-age headers when serving a live manifest, based on the expected next segment time (#226)
+
 v1.12.5
 ========
 
