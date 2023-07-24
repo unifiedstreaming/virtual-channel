@@ -1,3 +1,11 @@
+v1.12.9
+========
+
+Bugfixes:
+----------
+
+* Fix creation of check transition task for live transitions (#234)
+
 v1.12.8
 ========
 
