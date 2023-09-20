@@ -3,6 +3,8 @@
   <head>
     <meta name="live_source" content="https://demo.unified-streaming.com/k8s/vc-perm-live-source/trunk/colourbars/colourbars.isml" />
     <meta name="dvr_window_length" content="30" />
+    <meta name="hls_minimum_fragment_length" content="48/25" />
+    <meta name="splice_media" content="true" />
   </head>
   <body/>
 </smil>

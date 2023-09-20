@@ -1,3 +1,26 @@
+v1.12.10
+=========
+
+New Features:
+--------------
+
+* Improve handling of errors in HLS media sequence counting when a transition to a live source does not work as expected (#243)
+* Change transition worker to continuously check manifests to ensure correct state is maintained (#238)
+
+Bugfixes:
+----------
+
+* Fix DASH incorrect period ID and start time when producing multi-period output on base channel (#240)
+* Correctly set MPD@minimumUpdatePeriod and MPD@timeShiftBufferDepth in dynamic manifests (#236)
+
+v1.12.9
+========
+
+Bugfixes:
+----------
+
+* Fix creation of check transition task for live transitions (#234)
+
 v1.12.8
 ========
 
