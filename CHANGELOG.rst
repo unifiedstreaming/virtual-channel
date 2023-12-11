@@ -1,3 +1,18 @@
+v1.12.12
+=========
+
+New Features:
+--------------
+
+* Add access time to API and manifest proxy access logs (#250)
+* Allow HEAD requests to manifest proxy (#246)
+
+Bugfixes:
+----------
+
+* Fix gaps in DASH multi-period output (#248)
+* Clean up manifest proxy debug logging (#241)
+
 v1.12.11
 =========
 
