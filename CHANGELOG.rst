@@ -1,3 +1,11 @@
+v1.13.1
+========
+
+New Features:
+--------------
+
+* Add force DELETE for channels API (#256)
+
 v1.12.12
 =========
 
