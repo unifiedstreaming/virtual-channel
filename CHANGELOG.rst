@@ -1,3 +1,11 @@
+v1.14.0
+========
+
+Bugfixes:
+----------
+
+* Fix inefficiencies in channel and transition delete API (#258)
+
 v1.13.5
 ========
 
