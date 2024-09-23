@@ -1,3 +1,11 @@
+v1.14.3
+========
+
+New Features:
+--------------
+
+* Fix API error when attempting to update an already running live SMIL (#262)
+
 v1.14.0
 ========
 
