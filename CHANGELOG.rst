@@ -1,3 +1,28 @@
+v1.15.0
+========
+
+Breaking Changes:
+------------------
+
+* Fix consistent DASH adaptation set ID generation to incorporate all relevant properties (#272)
+
+  * This means different adaptation set IDs compared to previous versions, which may cause DASH playback to fail when upgrading.
+    If the player does not handle this gracefully, restarting the stream should resolve it.
+
+
+New Features:
+--------------
+
+* Experimental Feature: support frame accurate media conditioning using an external Media Processing Unit (#275)
+* Optimize database for performance, and add migration function to automatically upgrade older database versions (#268)
+* Improve housekeeping performance by bulk deleting transitions (#266)
+* Significantly improve performance for channels with many transitions (#264)
+
+Bugfixes:
+----------
+
+* Only trigger transition check tasks on successful channels (#274)
+
 v1.14.3
 ========
 
