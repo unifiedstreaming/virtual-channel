@@ -1,3 +1,11 @@
+v1.15.3
+========
+
+Bugfixes:
+----------
+
+* Fix using mpd_profile query parameter to toggle DVB DASH output (#282)
+
 v1.15.0
 ========
 
