@@ -1,3 +1,20 @@
+v1.15.5
+========
+
+New Features:
+--------------
+
+* Add support for dvr_window_length query parameter (#288)
+* Do not set MPD@timeShiftBufferDepth dynamically when using DVB DASH profile, instead leave it empty when manifest length is dynamic due to fixed start time (vbegin with either no vend or vend in future) (#285)
+
+v1.15.3
+========
+
+Bugfixes:
+----------
+
+* Fix using mpd_profile query parameter to toggle DVB DASH output (#282)
+
 v1.15.0
 ========
 

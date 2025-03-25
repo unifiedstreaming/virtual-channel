@@ -1,5 +1,3 @@
-version: "3"
-
 # Docker compose override to enable traefik HTTPS settings.
 
 services:
