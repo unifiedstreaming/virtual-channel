@@ -1,3 +1,13 @@
+v1.15.7
+========
+
+Bugfixes:
+----------
+
+* Set caching related headers (last-modified, expires, etc.) consistent with `Unified Origin <https://docs.unified-streaming.com/documentation/live/webserver.html#http-response-headers>`_ (#294)
+* Set HLS #EXT-X-TARGETDURATION to 2x the configured hls_minimum_fragment_length (#293)
+* Fix Virtual Channel responding with base Origin headers when sending a 304 Not Modified response to a cache revalidation request (#292)
+
 v1.15.5
 ========
 
