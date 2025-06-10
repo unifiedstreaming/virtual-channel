@@ -1,3 +1,29 @@
+v1.15.8
+========
+
+New Features:
+--------------
+
+* Add new option to handle manifest verbosity when using manifest edit: MANIFEST_EDIT_VERBOSE environment variable defaults to False, for debugging and testing individual requests can use manifest_edit_verbose as a query parameter (#281)
+
+Bugfixes:
+----------
+
+* Remove Range header from proxied manifest requests (#298)
+* Fix transition check worker failing for a channel with HLS or DASH playout disabled (#297)
+* Fix manifest edit APIs giving incorrect stream URI (#296)
+* Fix API key check on manifest edit related API calls (#295)
+
+v1.15.7
+========
+
+Bugfixes:
+----------
+
+* Set caching related headers (last-modified, expires, etc.) consistent with `Unified Origin <https://docs.unified-streaming.com/documentation/live/webserver.html#http-response-headers>`_ (#294)
+* Set HLS #EXT-X-TARGETDURATION to 2x the configured hls_minimum_fragment_length (#293)
+* Fix Virtual Channel responding with base Origin headers when sending a 304 Not Modified response to a cache revalidation request (#292)
+
 v1.15.5
 ========
 
