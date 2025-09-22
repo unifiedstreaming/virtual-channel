@@ -1,3 +1,11 @@
+v1.15.12
+=========
+
+Bugfixes:
+----------
+
+* Fix incorrect period ID lookup which can sometimes occur when first segment of MPD is the first segment of a SCTE 35 ad break (#302)
+
 v1.15.9
 ========
 
