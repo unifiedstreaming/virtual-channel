@@ -130,3 +130,6 @@ channels/*isml
 
 # auto-generated version file
 version.txt
+
+# changelog backup
+CHANGELOG.rst.bak

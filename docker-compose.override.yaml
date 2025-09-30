@@ -22,6 +22,7 @@ services:
       - "traefik.enable=true"
       - "traefik.http.routers.manifest-proxy.rule=Path(`/{manifest:.*\\.ism[l]?/.*\\.(mpd|m3u8)}`)"
       - "traefik.http.routers.manifest-proxy.entrypoints=web"
+      - "traefik.http.services.manifest-proxy.loadbalancer.server.port=80"
 
   traefik:
     command:

@@ -1,3 +1,20 @@
+v1.15.13
+=========
+
+Bugfixes:
+----------
+
+* Fix period ID lookup when using query parameters to toggle DVB DASH profile (#304)
+* Fix period ID lookup when SCTE 35 break occurs immediately after start of transition playlist (#303)
+
+v1.15.12
+=========
+
+Bugfixes:
+----------
+
+* Fix incorrect period ID lookup which can sometimes occur when first segment of MPD is the first segment of a SCTE 35 ad break (#302)
+
 v1.15.9
 ========
 
