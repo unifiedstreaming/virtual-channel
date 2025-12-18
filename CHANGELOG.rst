@@ -1,3 +1,11 @@
+v1.15.15
+=========
+
+New Features:
+--------------
+
+* Upgrade Traefik to fix Docker API incompatibility (#309)
+
 v1.15.13
 =========
 
